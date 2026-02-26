@@ -1,0 +1,2 @@
+add_executable(test_gridmap test_gridmap.cpp)
+target_link_libraries(test_gridmap PRIVATE robotics_lib)

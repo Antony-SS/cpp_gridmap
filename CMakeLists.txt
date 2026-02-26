@@ -12,3 +12,5 @@ target_include_directories(robotics_lib PUBLIC include)
 
 # Add the scripts (executables)
 add_subdirectory(scripts)
+# Add the tests (executables)
+add_subdirectory(tests)
