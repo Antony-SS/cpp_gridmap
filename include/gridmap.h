@@ -211,10 +211,6 @@ class DenseGridLayer {
          * -------
          * point_uv
          *     Grid cell indices (u, v) corresponding to the flat vector index.
-         *
-         * Notes
-         * -----
-         * Row-major ordering: u = idx % width, v = idx / width.
          */
         point_uv vec_idx_to_uv(int idx) const { 
             return point_uv{
