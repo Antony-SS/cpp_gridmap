@@ -74,11 +74,19 @@ class BFS : public PathFinder {
         /** Implement base find path, just calls find path with filled in params */
         std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end) { return find_path(start, end, false); }
 
-        /** Implement base find path */
-        std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags = false);
+        /** Implement find path with optional diagonal movement */
+        std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags);
+};
 
-    private:
-        
+class Dijkstra : public PathFinder {
+public:
+    Dijkstra(std::vector<int> const& data, int grid_height, int grid_width): PathFinder(data, grid_height, grid_width) {}
+
+    /** Implement base find path */
+    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end) { return find_path(start, end, false); }
+
+    /** Implement find path with optional diagonal movement */
+    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags);
 };
 
 class AStarPathFinder : public PathFinder {

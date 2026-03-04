@@ -35,6 +35,8 @@ std::vector<point_uv> PathFinder::get_valid_neighbors(point_uv p, bool diags) {
 std::optional<std::vector<point_uv>> BFS::find_path(point_uv start, point_uv end, bool diags) {
     std::queue<point_uv> frontier;
     std::unordered_map<int, int> came_from;
+    int start_idx = this->uv_to_vec(start);
+    came_from[start_idx] = start_idx;  // avoid re-pushing start when visiting its neighbors
 
     frontier.push(start);
 
@@ -47,10 +49,11 @@ std::optional<std::vector<point_uv>> BFS::find_path(point_uv start, point_uv end
             return std::optional<std::vector<point_uv>>(this->vec_to_uv(path));
         } else {
             int curr_idx = this->uv_to_vec(current);
-            for (auto const& nbr : this->get_valid_neighbors(current, diags = diags)) {
+            for (auto const& nbr : this->get_valid_neighbors(current, diags)) {
                 auto[it, inserted] = came_from.insert({this->uv_to_vec(nbr), this->uv_to_vec(current)});
-                if (inserted) { frontier.push(nbr); } 
+                if (inserted) { frontier.push(nbr); }
             }
+        frontier.pop();
         }
     }
     
@@ -91,5 +94,6 @@ std::vector<int> reconstruct_path(int end, int start, std::unordered_map<int, in
         current = parent;
         path.push_back(parent);
     }
+    std::reverse(path.begin(), path.end()); // reverse so that start is at index 0
     return path;
 }
