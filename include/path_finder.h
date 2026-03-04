@@ -8,9 +8,8 @@
 class PathFinder {
 public:
     PathFinder(std::vector<int> const& data, int grid_height, int grid_width) : data(data), grid_height(grid_height), grid_width(grid_width)  {}
-    
-    /** All Derived Classes Must Implement */
-    virtual std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end) = 0;
+
+    virtual std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags) = 0;
 
     /* Index into flat vector row-major form. */
     int uv_to_vec(point_uv p) const { return p.v * this->get_height() + p.u; }
@@ -75,18 +74,18 @@ class BFS : public PathFinder {
         std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end) { return find_path(start, end, false); }
 
         /** Implement find path with optional diagonal movement */
-        std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags);
+        std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags) override;
 };
 
 class Dijkstra : public PathFinder {
 public:
     Dijkstra(std::vector<int> const& data, int grid_height, int grid_width): PathFinder(data, grid_height, grid_width) {}
 
-    /** Implement base find path */
+    /** For lazy calling */
     std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end) { return find_path(start, end, false); }
 
     /** Implement find path with optional diagonal movement */
-    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags);
+    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags) override;
 };
 
 class AStarPathFinder : public PathFinder {
@@ -95,7 +94,7 @@ public:
     AStarPathFinder(std::vector<int> const& data, int grid_height, int grid_width): PathFinder(data, grid_height, grid_width) {}
 
     /** Satisfies base interface; uses default heuristic weight 1.0. */
-    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end) override;
+    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags) override;
 
     /** Same with explicit heuristic weight (and any other A*-specific options). */
     std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, double heuristic_weight, std::string dist_metric = "euclidean");
