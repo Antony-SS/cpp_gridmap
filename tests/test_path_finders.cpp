@@ -15,7 +15,7 @@ const std::vector<int> OBSTACLE_TEST_GRID = {
     0, 0, 0, 0, 0,
     -1, -1, -1, 0, -1,
     0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
+    0, -1, -1, -1, -1,
     0, 0, 0, 0, 0,
 };
 
@@ -27,7 +27,7 @@ const int OBSTACLE_TEST_GRID_WIDTH = 5;
 /** Minimal concrete subclass to test PathFinder base behavior (e.g. get_valid_neighbors). */
 struct PathFinderTestDouble : PathFinder {
     PathFinderTestDouble(std::vector<int> const& data, int h, int w) : PathFinder(data, h, w) {}
-    std::optional<std::vector<point_uv>> find_path(point_uv, point_uv) override { return std::nullopt; }
+    std::optional<std::vector<point_uv>> find_path(point_uv, point_uv, bool diags) override { return std::nullopt; }
 };
 
 bool test_base_path_finder() {
@@ -73,6 +73,14 @@ bool test_base_path_finder() {
     assert(neighbors_center_diags.at(7) == (point_uv{1, 1}));
     std::cout << "Base Path Finder get valid neighbors in center case with diags tests passed" << std::endl;
 
+    // 
+
+    // PathFinderTestDouble path_finder_obstacles(OBSTACLE_TEST_GRID, OBSTACLE_TEST_GRID_HEIGHT, OBSTACLE_TEST_GRID_WIDTH);
+    // std::vector<point_uv> neighbors = path_finder_obstacles.get_valid_neighbors(point_uv{0,0});
+    // assert(neighbors.size() == 1);
+    // assert(neighbors.at(0) == (point_uv{1, 0}));
+    // std::cout << "BFS Path Finder constructor tests passed" << std::endl;
+
     return true;
 }
 
@@ -94,7 +102,29 @@ bool test_bfs_path_finder() {
     assert(path->size() == 9);
     assert(path->at(0) == start);
     assert(path->at(8) == end);
-    std::cout << "BFS Path Finder find path tests passed" << std::endl;
+    std::cout << "BFS Path Finder find path no obstacles, no diags tests passed" << std::endl;
+
+    path = bfs.find_path(start, end, true);
+    assert(path);
+    assert(path->size() == 5);
+    assert(path->at(0) == start);
+    assert(path->at(4) == end);
+    std::cout << "BFS Path Finder find path no obstacles, with diags tests passed" << std::endl;
+
+    BFS bfs_obstacles(OBSTACLE_TEST_GRID, OBSTACLE_TEST_GRID_HEIGHT, OBSTACLE_TEST_GRID_WIDTH);
+    path = bfs_obstacles.find_path(start, end, false);
+    assert(path);
+    assert(path->size() == 15);
+    assert(path->at(0) == start);
+    assert(path->at(14) == end);
+    std::cout << "BFS Path Finder find path with obstacles, no diags tests passed" << std::endl;
+
+    path = bfs_obstacles.find_path(start, end, true);
+    assert(path);
+    assert(path->size() == 11);
+    assert(path->at(0) == start);
+    assert(path->at(10) == end);
+    std::cout << "BFS Path Finder find path with obstacles, with diags tests passed" << std::endl;
     return true;
 }
 

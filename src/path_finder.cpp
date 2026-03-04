@@ -61,7 +61,7 @@ std::optional<std::vector<point_uv>> BFS::find_path(point_uv start, point_uv end
 }
 
 /** Satisfies base interface; uses default heuristic weight 1.0. */
-std::optional<std::vector<point_uv>> AStarPathFinder::find_path(point_uv start, point_uv end) {
+std::optional<std::vector<point_uv>> AStarPathFinder::find_path(point_uv start, point_uv end, bool diags) {
     std::vector<point_uv> frontier;
     std::vector<point_uv> came_from;
 
