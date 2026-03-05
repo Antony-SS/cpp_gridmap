@@ -4,7 +4,6 @@
 #include <vector>
 #include <data_models.h>
 #include <unordered_map>
-#include <iostream>
 
 /** Base PathFinder Class Implementations */
 
@@ -76,7 +75,6 @@ std::optional<std::vector<point_uv>> Dijkstra::find_path(point_uv start, point_u
 
         auto [curr_cost_to, curr_node_idx] = frontier.top(); // read from top and pop it
         frontier.pop(); 
-        // std::cout << "Current node: " << this->vec_to_uv(curr_node_idx).u << ", " << this->vec_to_uv(curr_node_idx).v << std::endl;
 
         if (this->vec_to_uv(curr_node_idx) == end) {
             std::vector<int> path = reconstruct_path(this->uv_to_vec(end), this->uv_to_vec(start), came_from);
