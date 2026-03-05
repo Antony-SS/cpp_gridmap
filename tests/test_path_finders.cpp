@@ -11,11 +11,19 @@ const std::vector<int> EMPTY_TEST_GRID = {
     0, 0, 0, 0, 0,
 };
 
-const std::vector<int> OBSTACLE_TEST_GRID = {
+const std::vector<int> OBSTACLE_TEST_GRID = { // to test path finding w/ obstacles
     0, 0, 0, 0, 0,
     -1, -1, -1, 0, -1,
     0, 0, 0, 0, 0,
     0, -1, -1, -1, -1,
+    0, 0, 0, 0, 0,
+};
+
+const std::vector<int> WEIGHTED_TEST_GRID {
+    0, 0, 0, 0, 0,
+    -1, 20, -1, 1, -1,
+    0, 0, 0, 0, 0,
+    3, -1, -1, 15, -1,
     0, 0, 0, 0, 0,
 };
 
@@ -84,7 +92,6 @@ bool test_base_path_finder() {
     return true;
 }
 
-
 bool test_bfs_path_finder() {
     BFS bfs(EMPTY_TEST_GRID, EMPTY_TEST_GRID_HEIGHT, EMPTY_TEST_GRID_WIDTH);
     assert(bfs.get_height() == EMPTY_TEST_GRID_HEIGHT);
@@ -128,8 +135,68 @@ bool test_bfs_path_finder() {
     return true;
 }
 
+bool test_dijkstra_path_finder() {
+    Dijkstra dijkstra(EMPTY_TEST_GRID, EMPTY_TEST_GRID_HEIGHT, EMPTY_TEST_GRID_WIDTH);
+    assert(dijkstra.get_height() == EMPTY_TEST_GRID_HEIGHT);
+    assert(dijkstra.get_width() == EMPTY_TEST_GRID_WIDTH);
+    assert(dijkstra.uv_to_vec(point_uv{0, 0}) == 0);
+    assert(dijkstra.uv_to_vec(point_uv{4, 4}) == EMPTY_TEST_GRID_HEIGHT * EMPTY_TEST_GRID_WIDTH - 1);
+    assert(dijkstra.vec_to_uv(0) == (point_uv{0, 0}));
+    assert(dijkstra.vec_to_uv(24) == (point_uv{4, 4}));
+    std::cout << "Dijkstra Path Finder constructor tests passed" << std::endl;
+
+    point_uv start = {0, 0};
+    point_uv end = {4, 4};
+    std::optional<std::vector<point_uv>> path = dijkstra.find_path(start, end, false);
+    assert(path);
+    assert(path->size() == 9);
+    assert(path->at(0) == start);
+    assert(path->at(8) == end);
+    std::cout << "Dijkstra Path Finder find path no obstacles, no diags tests passed" << std::endl;
+
+    path = dijkstra.find_path(start, end, true);
+    assert(path);
+    assert(path->size() == 5);
+    assert(path->at(0) == start);
+    assert(path->at(4) == end);
+    std::cout << "Dijkstra Path Finder find path no obstacles, with diags tests passed" << std::endl;
+
+    Dijkstra dijkstra_obstacles(OBSTACLE_TEST_GRID, OBSTACLE_TEST_GRID_HEIGHT, OBSTACLE_TEST_GRID_WIDTH);
+    path = dijkstra_obstacles.find_path(start, end, false);
+    assert(path);
+    assert(path->size() == 15);
+    assert(path->at(0) == start);
+    assert(path->at(14) == end);
+    std::cout << "Dijkstra Path Finder find path with obstacles, no diags tests passed" << std::endl;
+
+    path = dijkstra_obstacles.find_path(start, end, true);
+    assert(path);
+    assert(path->size() == 11);
+    assert(path->at(0) == start);
+    assert(path->at(10) == end);
+    std::cout << "Dijkstra Path Finder find path with obstacles, with diags tests passed" << std::endl;
+
+    Dijkstra dijkstra_weighted(WEIGHTED_TEST_GRID, EMPTY_TEST_GRID_HEIGHT, EMPTY_TEST_GRID_WIDTH);
+    path = dijkstra_weighted.find_path(start, end, false);
+    assert(path);
+    assert(path->size() == 15);
+    assert(path->at(0) == start);
+    assert(path->at(14) == end);
+    std::cout << "Dijkstra Path Finder find path weighted, no diags tests passed" << std::endl;
+
+    path = dijkstra_weighted.find_path(start, end, true);
+    assert(path);
+    assert(path->size() == 11);
+    assert(path->at(0) == start);
+    assert(path->at(10) == end);
+    std::cout << "Dijkstra Path Finder find path weighted, with diags tests passed" << std::endl;
+
+    return true;
+}
+
 int main() {
     test_base_path_finder();
     test_bfs_path_finder();
+    test_dijkstra_path_finder();
     return 0;
 }

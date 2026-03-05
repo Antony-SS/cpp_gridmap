@@ -4,6 +4,7 @@
 #include <vector>
 #include <data_models.h>
 #include <unordered_map>
+#include <iostream>
 
 /** Base PathFinder Class Implementations */
 
@@ -43,6 +44,7 @@ std::optional<std::vector<point_uv>> BFS::find_path(point_uv start, point_uv end
     while (!frontier.empty()) {
 
         point_uv current = frontier.front();
+        frontier.pop(); // pop right after reading off
 
         if (current == end) { // if we've reached goal
             std::vector<int> path = reconstruct_path(this->uv_to_vec(end), this->uv_to_vec(start), came_from);
@@ -53,11 +55,52 @@ std::optional<std::vector<point_uv>> BFS::find_path(point_uv start, point_uv end
                 auto[it, inserted] = came_from.insert({this->uv_to_vec(nbr), this->uv_to_vec(current)});
                 if (inserted) { frontier.push(nbr); }
             }
-        frontier.pop();
         }
     }
-    
     return std::nullopt; // no path found if we reach this point
+}
+
+std::optional<std::vector<point_uv>> Dijkstra::find_path(point_uv start, point_uv end, bool diags) {
+
+    std::unordered_map<int, int> came_from; // key is child, value is parent node we came from
+    std::unordered_map<int, int> costs; // key is node, value is our current best stored cost to get to that point
+    using entry = std::pair<int, int>; // stores <cost for node, node idx>
+    auto cmp = [](const entry& a, const entry& b) { return a.first > b.first; }; // define comparator
+    std::priority_queue<entry, std::vector<entry>, decltype(cmp)> frontier (cmp);
+    
+    came_from[this->uv_to_vec(start)] = this->uv_to_vec(start);
+    costs.insert({0, this->uv_to_vec(start)});
+    frontier.push({0, this->uv_to_vec(start)});
+
+    while (!frontier.empty()) {
+
+        auto [curr_cost_to, curr_node_idx] = frontier.top(); // read from top and pop it
+        frontier.pop(); 
+        // std::cout << "Current node: " << this->vec_to_uv(curr_node_idx).u << ", " << this->vec_to_uv(curr_node_idx).v << std::endl;
+
+        if (this->vec_to_uv(curr_node_idx) == end) {
+            std::vector<int> path = reconstruct_path(this->uv_to_vec(end), this->uv_to_vec(start), came_from);
+            return std::optional<std::vector<point_uv>> (this->vec_to_uv(path));
+        } else {
+            for (auto const& nbr : this->get_valid_neighbors(this->vec_to_uv(curr_node_idx), diags)) {
+                int cost_to_nbr = curr_cost_to + this->data.at(this->uv_to_vec(nbr));
+                if (costs.find(this->uv_to_vec(nbr)) != costs.end()) { // already exists in map
+                    if (cost_to_nbr < costs[this->uv_to_vec(nbr)]) { // if new path is cheaper
+                        frontier.push({cost_to_nbr, this->uv_to_vec(nbr)});
+                        costs[this->uv_to_vec(nbr)] = cost_to_nbr;
+                        came_from[this->uv_to_vec(nbr)] = curr_node_idx;
+                    }
+                } else {  // doesn't exist in map, insert into cost dict, parents dict, and add to frontier
+                    costs[this->uv_to_vec(nbr)] = cost_to_nbr;
+                    came_from[this->uv_to_vec(nbr)] = curr_node_idx;
+                    frontier.push({cost_to_nbr, this->uv_to_vec(nbr)});
+                }
+            }
+        }
+    }
+
+    return std::nullopt; // we'll only reach this point if we dont find a valid path
+
 }
 
 /** Satisfies base interface; uses default heuristic weight 1.0. */
@@ -68,14 +111,14 @@ std::optional<std::vector<point_uv>> AStarPathFinder::find_path(point_uv start, 
     frontier.push_back(start);
 
     // TODO: Implement A* pathfinding algorithm
-    return std::vector<point_uv>();
+    return std::optional<std::vector<point_uv>>(std::vector<point_uv>());
 
 }
 
 /** Same with explicit heuristic weight (and any other A*-specific options). */
 std::optional<std::vector<point_uv>> AStarPathFinder::find_path(point_uv start, point_uv end, double heuristic_weight, std::string dist_metric) {
     // TODO: Implement A* Pathfinding Algorithm
-    return std::vector<point_uv>();
+    return std::optional<std::vector<point_uv>>(std::vector<point_uv>());
 }
 
 /** Utils Functions */
