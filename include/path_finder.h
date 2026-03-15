@@ -89,15 +89,35 @@ public:
 };
 
 class AStarPathFinder : public PathFinder {
+
+
 public:
+    enum class DistanceMetric {
+        Euclidean,
+        Manhattan,
+    };
     /** Constructor for AStarPathFinder, doesn't have state beyond base class PathFinder */
     AStarPathFinder(std::vector<int> const& data, int grid_height, int grid_width): PathFinder(data, grid_height, grid_width) {}
 
     /** Satisfies base interface; uses default heuristic weight 1.0. */
-    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags) override;
+    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags) override {
+        return find_path(start, end, diags, 1.0, DistanceMetric::Euclidean);
+    }
 
     /** Same with explicit heuristic weight (and any other A*-specific options). */
-    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, double heuristic_weight, std::string dist_metric = "euclidean");
+    std::optional<std::vector<point_uv>> find_path(point_uv start, point_uv end, bool diags, double heuristic_weight, DistanceMetric dist_metric = DistanceMetric::Euclidean);
+
+    double heuristic_cost(point_uv p1, point_uv p2, DistanceMetric dist_metric = DistanceMetric::Euclidean) {
+        if (dist_metric == DistanceMetric::Euclidean)
+            return std::sqrt(std::pow(p1.u - p2.u, 2) + std::pow(p1.v - p2.v, 2));
+        else if (dist_metric == DistanceMetric::Manhattan) {
+            return (std::abs(p1.u - p2.u) + std::abs(p1.v - p2.v));
+        } else {
+            assert(false && "Invalid distance metric");
+            return -1;
+        }
+        
+    }   
 };
 
 /** Utils Functions */

@@ -47,10 +47,6 @@ class GridMapCoordinates {
     private:
         gridmap_bounds bounds;
         double const resolution;
-        // std::vector<double>x_edges;
-        // std::vector<double>y_edges;
-        // std::vector<double>x_bin_centers; consider adding these
-        // std::vector<double>y_bin_centers;
 
     public:
 

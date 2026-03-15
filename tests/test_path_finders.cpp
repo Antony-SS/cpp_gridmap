@@ -194,9 +194,91 @@ bool test_dijkstra_path_finder() {
     return true;
 }
 
+bool test_astar_path_finder() { 
+
+
+    AStarPathFinder astarpathfinder(EMPTY_TEST_GRID, EMPTY_TEST_GRID_HEIGHT, EMPTY_TEST_GRID_WIDTH);
+    assert(astarpathfinder.get_height() == EMPTY_TEST_GRID_HEIGHT);
+    assert(astarpathfinder.get_width() == EMPTY_TEST_GRID_WIDTH);
+    assert(astarpathfinder.uv_to_vec(point_uv{0, 0}) == 0);
+    assert(astarpathfinder.uv_to_vec(point_uv{4, 4}) == EMPTY_TEST_GRID_HEIGHT * EMPTY_TEST_GRID_WIDTH - 1);
+    assert(astarpathfinder.vec_to_uv(0) == (point_uv{0, 0}));
+    assert(astarpathfinder.vec_to_uv(24) == (point_uv{4, 4}));
+    std::cout << "Astar Path Finder constructor tests passed" << std::endl;
+
+    double target_euclidean_cost = sqrt(pow(4 - 0, 2) + pow(4 - 0, 2));
+    assert(std::abs(astarpathfinder.heuristic_cost(point_uv{0, 0}, point_uv{4, 4}, AStarPathFinder::DistanceMetric::Euclidean) - target_euclidean_cost) < 1e-6);
+    double target_manhattan_cost = std::abs(4 - 0) + std::abs(4 - 0);
+    assert(std::abs(astarpathfinder.heuristic_cost(point_uv{0, 0}, point_uv{4, 4}, AStarPathFinder::DistanceMetric::Manhattan) - target_manhattan_cost) < 1e-6);
+    std::cout << "Astar Path Finder heuristic cost tests passed" << std::endl;
+
+    point_uv start = {0, 0};
+    point_uv end = {4, 4};
+    std::optional<std::vector<point_uv>> path = astarpathfinder.find_path(start, end, false);
+    assert(path);
+    assert(path->size() == 9);
+    assert(path->at(0) == start);
+    assert(path->at(8) == end);
+    std::cout << "AStar Path Finder find path no obstacles, no diags tests passed" << std::endl;
+
+    path = astarpathfinder.find_path(start, end, true);
+    assert(path);
+    assert(path->size() == 5);
+    assert(path->at(0) == start);
+    assert(path->at(4) == end);
+    std::cout << "Astar Path Finder find path no obstacles, with diags tests passed" << std::endl;
+
+    AStarPathFinder astarobstacles(OBSTACLE_TEST_GRID, OBSTACLE_TEST_GRID_HEIGHT, OBSTACLE_TEST_GRID_WIDTH);
+    path = astarobstacles.find_path(start, end, false);
+    assert(path);
+    assert(path->size() == 15);
+    assert(path->at(0) == start);
+    assert(path->at(14) == end);
+    std::cout << "Astar Path Finder find path with obstacles, no diags tests passed" << std::endl;
+
+    path = astarobstacles.find_path(start, end, true);
+    assert(path);
+    assert(path->size() == 11);
+    assert(path->at(0) == start);
+    assert(path->at(10) == end);
+    std::cout << "Astar Path Finder find path with obstacles, with diags tests passed" << std::endl;
+
+    AStarPathFinder astar_weighted(WEIGHTED_TEST_GRID, EMPTY_TEST_GRID_HEIGHT, EMPTY_TEST_GRID_WIDTH);
+    path = astar_weighted.find_path(start, end, false, 1.0, AStarPathFinder::DistanceMetric::Manhattan);
+    assert(path);
+    std::cout << "Length of path: " << path->size() << std::endl;
+    for (size_t i = 0; i < path->size(); ++i) {
+        std::cout << "Path point " << i << ": (" << path->at(i).u << ", " << path->at(i).v << ")" << std::endl;
+    }
+    assert(path->size() == 15);
+    assert(path->at(0) == start);
+    assert(path->at(14) == end);
+    std::cout << "Astar Path Finder find path weighted, no diags tests passed" << std::endl;
+
+    path = astar_weighted.find_path(start, end, true, 1.0, AStarPathFinder::DistanceMetric::Euclidean);
+    assert(path);
+    assert(path->size() == 11);
+    assert(path->at(0) == start);
+    assert(path->at(10) == end);
+    std::cout << "Astar Path Finder find path weighted, with diags tests passed" << std::endl;
+
+    // with this heavy heuristic weight, we should get get the shortest possisble path with diags
+    path = astar_weighted.find_path(start, end, true, 5.0, AStarPathFinder::DistanceMetric::Euclidean);
+    assert(path);
+    assert(path->size() == 11);
+    assert(path->at(0) == start);
+    assert(path->at(10) == end);
+    std::cout << "Astar Path Finder find path weighted, with diags, heuristic weight 5 tests passed" << std::endl;
+
+    return true;
+
+
+ };
+
 int main() {
     test_base_path_finder();
     test_bfs_path_finder();
     test_dijkstra_path_finder();
+    test_astar_path_finder();
     return 0;
 }
